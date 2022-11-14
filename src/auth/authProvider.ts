@@ -2,11 +2,11 @@ const authProvider = {
   isAuthenticated: false,
   signin(callback: () => void) {
     authProvider.isAuthenticated = true;
-    setTimeout(callback, 100); // fake async
+    callback();
   },
   signout(callback: () => void) {
     authProvider.isAuthenticated = false;
-    setTimeout(callback, 100);
+    callback();
   },
 };
 

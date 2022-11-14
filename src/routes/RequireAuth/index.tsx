@@ -10,6 +10,11 @@ interface RequireAuthProps {
 const RequireAuth: FC<RequireAuthProps> = ({ children, admin }) => {
   const location = useLocation();
   const auth = useAuth();
+  const token = localStorage.getItem('token');
+  if (token) {
+    auth.signinToken(token, () => {});
+    return children;
+  }
 
   if (!auth.user) {
     return <Navigate to="/login" state={{ from: location }} replace />;

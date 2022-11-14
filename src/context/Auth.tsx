@@ -1,10 +1,12 @@
 import React, { createContext, ReactNode, useState } from 'react';
 import { authProvider } from '../auth/authProvider';
 import { IAuthUser } from '../requests/login';
+import jwtDecode from 'jwt-decode';
 
 interface AuthContextType {
   user: IAuthUser | null;
   signin: (user: IAuthUser, callback: () => void) => void;
+  signinToken: (token: string, callback: () => void) => void;
   signout: (callback: () => void) => void;
 }
 
@@ -21,6 +23,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const signinToken = (token: string, callback: () => void) => {
+    return authProvider.signin(() => {
+      const decoded = jwtDecode<{ user: IAuthUser }>(token);
+      setUser(decoded.user);
+      callback();
+    });
+  };
+
   const signout = (callback: () => void) => {
     return authProvider.signout(() => {
       setUser(null);
@@ -28,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const value = { user, signin, signout };
+  const value = { user, signin, signinToken, signout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
