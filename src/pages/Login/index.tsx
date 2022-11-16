@@ -13,6 +13,9 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import logo from 'img/mediapp.png';
+import { AxiosError } from 'axios';
+import { classNames } from 'primereact/utils';
+import { IBackendError } from '../../interfaces/backendError';
 
 const Login = () => {
   const auth = useAuth();
@@ -22,6 +25,8 @@ const Login = () => {
     user: '',
     password: '',
   });
+
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const handleFormChange = (e: ChangeEvent<HTMLInputElement>) => {
     setLoginData(prevState => {
@@ -33,16 +38,22 @@ const Login = () => {
   };
 
   const handleFormSubmit = async () => {
-    const user = await postLogin(loginData.user, loginData.password);
-    if (user.isAdmin) {
-      auth.signin(user, () => {
-        navigate('/backoffice');
+    postLogin(loginData.user, loginData.password)
+      .then(user => {
+        setLoginError(null);
+        if (user.isAdmin) {
+          auth.signin(user, () => {
+            navigate('/backoffice');
+          });
+        } else {
+          auth.signin(user, () => {
+            navigate('/mediapp/films');
+          });
+        }
+      })
+      .catch((e: AxiosError<IBackendError>) => {
+        setLoginError(e.response?.data.error || null);
       });
-    } else {
-      auth.signin(user, () => {
-        navigate('/mediapp/films');
-      });
-    }
   };
 
   return (
@@ -56,7 +67,10 @@ const Login = () => {
               value={loginData.user}
               name="user"
               onChange={handleFormChange}
-              className="w-full"
+              className={classNames({
+                'w-full': true,
+                'p-invalid': loginError,
+              })}
             />
           </CustomFormField>
           <CustomFormField className="mb-5">
@@ -66,9 +80,13 @@ const Login = () => {
               type="password"
               name="password"
               onChange={handleFormChange}
-              className="w-full"
+              className={classNames({
+                'w-full': true,
+                'p-invalid': loginError,
+              })}
             />
           </CustomFormField>
+          {loginError && <small className="p-error m-2">{loginError}</small>}
           <ForgottenPasswordContainer>
             <Link to="#">¿Has olvidado la contraseña?</Link>
           </ForgottenPasswordContainer>
