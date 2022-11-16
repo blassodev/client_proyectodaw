@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signout = (callback: () => void) => {
     return authProvider.signout(() => {
       setUser(null);
+      localStorage.removeItem('token');
       callback();
     });
   };
