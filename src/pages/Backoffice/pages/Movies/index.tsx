@@ -96,62 +96,6 @@ export const Movies: React.FC = () => {
     setSelectedMovies(value);
   };
 
-  const imageBodyTemplate = (rowData: DataTableFilm) => {
-    return <img src={rowData.imageUrl} alt="" className="tableImage" />;
-  };
-  const ratingBodyTemplate = (rowData: DataTableFilm) => {
-    return <Rating value={rowData.score} readOnly cancel={false} />;
-  };
-  const directorBodyTemplate = (rowData: DataTableFilm) => {
-    const director = directors.find(
-      fdirector => fdirector.id === rowData.director
-    );
-    return director?.fullName;
-  };
-
-  const actionBodyTemplate = (rowData: DataTableFilm) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-clone"
-          className="p-button-rounded mr-2"
-          onClick={() => handleCloneAction(rowData)}
-        />
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-          onClick={() => handleEditAction(rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-warning"
-          onClick={() => handleDeleteFilm(rowData)}
-        />
-      </React.Fragment>
-    );
-  };
-
-  const editDialogFooter = (
-    <React.Fragment>
-      <Button
-        label="Cancelar"
-        icon="pi pi-times"
-        className="p-button-text"
-        onClick={() => handleDialogHide()}
-      />
-      <Button
-        label="Guardar"
-        icon="pi pi-check"
-        className="p-button-text"
-        onClick={() =>
-          editForm.action === ACTIONS.EDIT
-            ? handleEditSave()
-            : handleNewCreate()
-        }
-      />
-    </React.Fragment>
-  );
-
   const handleEditAction = (rowData: DataTableFilm) => {
     const director = directors.find(
       fdirector => fdirector.id === rowData.director
@@ -258,6 +202,79 @@ export const Movies: React.FC = () => {
     }));
   };
 
+  const handleDialogHide = () => {
+    setVisibleDialog(false);
+  };
+
+  const directorSearch = async (event: AutoCompleteCompleteMethodParams) => {
+    const { query } = event;
+
+    const directors = await getDirectors();
+
+    const filtered = directors.filter(director =>
+      director.fullName.toLowerCase().includes(query)
+    );
+
+    setDirectors(filtered ?? []);
+  };
+
+  const imageBodyTemplate = (rowData: DataTableFilm) => {
+    return <img src={rowData.imageUrl} alt="" className="tableImage" />;
+  };
+  const ratingBodyTemplate = (rowData: DataTableFilm) => {
+    return <Rating value={rowData.score} readOnly cancel={false} />;
+  };
+
+  const directorBodyTemplate = (rowData: DataTableFilm) => {
+    const director = directors.find(
+      fdirector => fdirector.id === rowData.director
+    );
+    return director?.fullName;
+  };
+
+  const actionBodyTemplate = (rowData: DataTableFilm) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-clone"
+          className="p-button-rounded mr-2"
+          onClick={() => handleCloneAction(rowData)}
+        />
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => handleEditAction(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-warning"
+          onClick={() => handleDeleteFilm(rowData)}
+        />
+      </React.Fragment>
+    );
+  };
+
+  const editDialogFooter = (
+    <React.Fragment>
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={() => handleDialogHide()}
+      />
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={() =>
+          editForm.action === ACTIONS.EDIT
+            ? handleEditSave()
+            : handleNewCreate()
+        }
+      />
+    </React.Fragment>
+  );
+
   const leftToolbarTemplate = () => {
     return (
       <React.Fragment>
@@ -275,22 +292,6 @@ export const Movies: React.FC = () => {
         />
       </React.Fragment>
     );
-  };
-
-  const handleDialogHide = () => {
-    setVisibleDialog(false);
-  };
-
-  const directorSearch = async (event: AutoCompleteCompleteMethodParams) => {
-    const { query } = event;
-
-    const directors = await getDirectors();
-
-    const filtered = directors.filter(director =>
-      director.fullName.toLowerCase().includes(query)
-    );
-
-    setDirectors(filtered ?? []);
   };
 
   return (
