@@ -8,6 +8,7 @@ import { Backoffice } from './pages/Backoffice';
 import { Films } from './pages/MediaApp/pages/Films';
 import { Page404 } from './pages/Page404';
 import { Movies } from './pages/Backoffice/pages/Movies';
+import Directors from './pages/Backoffice/pages/Directors';
 
 const Router: FC = () => (
   <AuthProvider>
@@ -35,6 +36,7 @@ const Router: FC = () => (
       >
         <Route index element={<Navigate to="movies" />} />
         <Route path="movies" element={<Movies />} />
+        <Route path="directors" element={<Directors />} />
       </Route>
       <Route path="*" element={<Page404 />} />
     </Routes>
