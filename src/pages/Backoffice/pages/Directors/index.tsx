@@ -126,7 +126,7 @@ const Directors: FC = () => {
         ></Column>
         <Column field="id" header="ID"></Column>
         <Column field="name" header="Nombre"></Column>
-        <Column field="surname" header="Apellidos"></Column>
+        <Column field="surnames" header="Apellidos"></Column>
         <Column field="age" header="Edad"></Column>
         <Column body={actionBodyTemplate} header="Acciones"></Column>
       </DataTable>
