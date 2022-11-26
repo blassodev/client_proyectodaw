@@ -19,6 +19,11 @@ export const Backoffice: React.FC = () => {
       icon: 'pi pi-user',
     },
     {
+      label: 'Usuarios',
+      url: '/backoffice/users',
+      icon: 'pi pi-user',
+    },
+    {
       label: 'Cerrar sesión',
       icon: 'pi pi-power-off',
       command() {
