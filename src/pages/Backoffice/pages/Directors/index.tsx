@@ -5,7 +5,12 @@ import {
   DataTableSelectionChangeParams,
 } from 'primereact/datatable';
 import { DirectorModel } from '../../../../models/DirectorModel';
-import { getDirectors } from '../../../../requests/directors';
+import {
+  createDirector,
+  deleteDirector,
+  deleteDirectors,
+  getDirectors,
+} from '../../../../requests/directors';
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { CustomFormField } from '../Movies/style';
@@ -21,8 +26,12 @@ const Directors: FC = () => {
   const [visibleDialog, setVisibleDialog] = useState(false);
 
   useEffect(() => {
+    fetchDirectors();
+  }, []);
+
+  const fetchDirectors = () => {
     getDirectors().then(setDirectors);
-  });
+  };
 
   const handleDialogHide = () => {
     setVisibleDialog(false);
@@ -33,10 +42,29 @@ const Directors: FC = () => {
     setSelectedDirectors(value);
   };
 
+  const cloneDirector = async (director: DirectorModel) => {
+    await createDirector(director.toInterface());
+    fetchDirectors();
+  };
+
+  const handleTrashClick = async (id: number) => {
+    await deleteDirector(id);
+    fetchDirectors();
+  };
+
+  const handleBatchTrashClick = async () => {
+    await deleteDirectors(selectedDirectors.map(d => d.id));
+    fetchDirectors();
+  };
+
   const actionBodyTemplate = (rowData: DirectorModel) => {
     return (
       <React.Fragment>
-        <Button icon="pi pi-clone" className="p-button-rounded mr-2" />
+        <Button
+          icon="pi pi-clone"
+          className="p-button-rounded mr-2"
+          onClick={() => cloneDirector(rowData)}
+        />
         <Button
           icon="pi pi-pencil"
           className="p-button-rounded p-button-success mr-2"
@@ -44,6 +72,7 @@ const Directors: FC = () => {
         <Button
           icon="pi pi-trash"
           className="p-button-rounded p-button-warning"
+          onClick={() => handleTrashClick(rowData.id)}
         />
       </React.Fragment>
     );
@@ -74,6 +103,7 @@ const Directors: FC = () => {
           label="Eliminar"
           icon="pi pi-trash"
           className="p-button-danger"
+          onClick={handleBatchTrashClick}
         />
       </React.Fragment>
     );

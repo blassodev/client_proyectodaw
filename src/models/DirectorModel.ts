@@ -1,5 +1,12 @@
 import { DirectorResponse } from '../requests/directors';
 
+export interface DirectorInteface {
+  name: string;
+  surnames: string;
+  bio: string;
+  age: number;
+}
+
 export class DirectorModel {
   private _id: number;
   private _name: string;
@@ -37,5 +44,14 @@ export class DirectorModel {
 
   get fullName(): string {
     return this._name + ' ' + this._surnames;
+  }
+
+  toInterface(): DirectorInteface {
+    return {
+      name: this.name,
+      surnames: this.surnames,
+      bio: this.bio,
+      age: this.age,
+    };
   }
 }

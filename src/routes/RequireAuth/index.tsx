@@ -1,6 +1,6 @@
 import { useAuth } from '../../hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 
 interface RequireAuthProps {
   admin?: boolean;
@@ -11,8 +11,14 @@ const RequireAuth: FC<RequireAuthProps> = ({ children, admin }) => {
   const location = useLocation();
   const auth = useAuth();
   const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    if (token) {
+      auth.signinToken(token, () => {});
+    }
+  }, [token]);
+
   if (token) {
-    auth.signinToken(token, () => {});
     return children;
   }
 
