@@ -2,6 +2,13 @@ import { requestInstance } from './requestInstance';
 import { FilmModel } from 'models/FilmModel';
 import { AdminFilmData, AdminFilmModel } from '../models/AdminFilmModel';
 
+export interface FilmRelationInterface {
+  userId: number;
+  movieId: number;
+  assignedAt?: string;
+  expiresInMinutes?: string;
+}
+
 export interface Director {
   id: number;
   name: string;
@@ -63,4 +70,8 @@ export const updateFilm = async (id: number, data: UpdateFilmInput) => {
 
 export const createFilm = async (data: UpdateFilmInput) => {
   await requestInstance.post('films/admin/', data);
+};
+
+export const createFilmRelation = async (data: FilmRelationInterface) => {
+  await requestInstance.post('films/admin/relation', data);
 };

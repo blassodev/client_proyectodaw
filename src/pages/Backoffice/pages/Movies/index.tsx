@@ -21,9 +21,14 @@ import { getDirectors } from '../../../../requests/directors';
 import { DirectorModel } from '../../../../models/DirectorModel';
 import {
   AutoComplete,
+  AutoCompleteChangeParams,
   AutoCompleteCompleteMethodParams,
 } from 'primereact/autocomplete';
 import { Toolbar } from 'primereact/toolbar';
+import Actions from '../../enums/actions.enum';
+import { UserModel } from '../../../../models/UserModel';
+import { getUsers } from '../../../../requests/users';
+import { AdminFilmModel } from '../../../../models/AdminFilmModel';
 
 interface DataTableFilm {
   id: number;
@@ -33,19 +38,25 @@ interface DataTableFilm {
   imageUrl: string;
   score: number;
 }
-export enum ACTIONS {
-  // eslint-disable-next-line no-unused-vars
-  EDIT,
-  // eslint-disable-next-line no-unused-vars
-  NEW,
-}
 
 export const Movies: React.FC = () => {
   const [films, setFilms] = useState<DataTableFilm[]>([]);
+  const [filmsAutocomplete, setFilmsAutocomplete] = useState<AdminFilmModel[]>(
+    []
+  );
+  const [users, setUsers] = useState<UserModel[]>([]);
   const [directors, setDirectors] = useState<DirectorModel[]>([]);
   const [visibleDialog, setVisibleDialog] = useState(false);
+  const [visibleRelationDialog, setVisibleRelationDialog] = useState(false);
+  const [relationForm, setRelationForm] = useState<{
+    user: number | null;
+    film: number | null;
+  }>({
+    user: null,
+    film: null,
+  });
   const [editForm, setEditForm] = useState({
-    action: ACTIONS.NEW,
+    action: Actions.NEW,
     id: 0,
     name: '',
     imageUrl: '',
@@ -65,6 +76,7 @@ export const Movies: React.FC = () => {
 
   useEffect(() => {
     fetchFilms();
+    fetchUsers();
     getDirectors().then(setDirectors);
   }, []);
 
@@ -85,6 +97,10 @@ export const Movies: React.FC = () => {
     });
   };
 
+  const fetchUsers = () => {
+    getUsers().then(setUsers);
+  };
+
   const handleDeleteFilm = (rowData: DataTableFilm) => {
     deleteFilm(rowData.id).then(() => {
       fetchFilms();
@@ -102,7 +118,7 @@ export const Movies: React.FC = () => {
     );
     setEditForm(prevState => ({
       ...prevState,
-      action: ACTIONS.EDIT,
+      action: Actions.EDIT,
       id: rowData.id,
       name: rowData.name,
       imageUrl: rowData.imageUrl,
@@ -144,7 +160,7 @@ export const Movies: React.FC = () => {
 
   const handleNewClick = () => {
     setEditForm({
-      action: ACTIONS.NEW,
+      action: Actions.NEW,
       id: 0,
       name: '',
       imageUrl: '',
@@ -206,6 +222,17 @@ export const Movies: React.FC = () => {
     setVisibleDialog(false);
   };
 
+  const handleRelationDialogHide = () => {
+    setVisibleRelationDialog(false);
+  };
+
+  const handleRelationChange = (event: AutoCompleteChangeParams) => {
+    setRelationForm({
+      ...relationForm,
+      [event.target.name]: event.value,
+    });
+  };
+
   const directorSearch = async (event: AutoCompleteCompleteMethodParams) => {
     const { query } = event;
 
@@ -216,6 +243,32 @@ export const Movies: React.FC = () => {
     );
 
     setDirectors(filtered ?? []);
+  };
+
+  const userSearch = async (event: AutoCompleteCompleteMethodParams) => {
+    const { query } = event;
+
+    const users = await getUsers();
+
+    const filtered = users.filter(user =>
+      user.name.toLowerCase().includes(query)
+    );
+
+    setUsers(filtered ?? []);
+  };
+
+  const filmSearch = async (event: AutoCompleteCompleteMethodParams) => {
+    const { query } = event;
+
+    const films = await getAllFilms();
+
+    const filtered = films.filter(film =>
+      film.name.toLowerCase().includes(query)
+    );
+
+    console.log(films);
+
+    setFilmsAutocomplete(filtered ?? []);
   };
 
   const imageBodyTemplate = (rowData: DataTableFilm) => {
@@ -235,6 +288,11 @@ export const Movies: React.FC = () => {
   const actionBodyTemplate = (rowData: DataTableFilm) => {
     return (
       <React.Fragment>
+        <Button
+          icon="pi pi-arrow-right-arrow-left"
+          className="p-button-rounded mr-2"
+          onClick={() => setVisibleRelationDialog(true)}
+        />
         <Button
           icon="pi pi-clone"
           className="p-button-rounded mr-2"
@@ -267,11 +325,23 @@ export const Movies: React.FC = () => {
         icon="pi pi-check"
         className="p-button-text"
         onClick={() =>
-          editForm.action === ACTIONS.EDIT
+          editForm.action === Actions.EDIT
             ? handleEditSave()
             : handleNewCreate()
         }
       />
+    </React.Fragment>
+  );
+
+  const relationDialogFooter = (
+    <React.Fragment>
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={() => handleDialogHide()}
+      />
+      <Button label="Guardar" icon="pi pi-check" className="p-button-text" />
     </React.Fragment>
   );
 
@@ -375,6 +445,38 @@ export const Movies: React.FC = () => {
               setEditForm({ ...editForm, director: value })
             }
             field="fullName"
+          />
+        </CustomFormField>
+      </Dialog>
+
+      <Dialog
+        onHide={handleRelationDialogHide}
+        visible={visibleRelationDialog}
+        style={{ width: 1000 }}
+        footer={relationDialogFooter}
+      >
+        <CustomFormField>
+          <label htmlFor="user">Usuario</label>
+          <AutoComplete
+            name="user"
+            suggestions={users}
+            dropdown
+            completeMethod={userSearch}
+            field="name"
+            value={relationForm.user}
+            onChange={handleRelationChange}
+          />
+        </CustomFormField>
+        <CustomFormField>
+          <label htmlFor="film">Pelicula</label>
+          <AutoComplete
+            name="film"
+            suggestions={filmsAutocomplete}
+            dropdown
+            completeMethod={filmSearch}
+            value={relationForm.film}
+            onChange={handleRelationChange}
+            field="name"
           />
         </CustomFormField>
       </Dialog>
