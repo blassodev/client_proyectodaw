@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { ChangeEventHandler, FC, useEffect, useState } from 'react';
 import { Column } from 'primereact/column';
 import {
   DataTable,
@@ -15,11 +15,21 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { CustomFormField } from '../Movies/style';
 import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
+import { InputNumber, InputNumberChangeParams } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
+import { InputTextarea } from 'primereact/inputtextarea';
+import Actions from '../../enums/actions.enum';
 
 const Directors: FC = () => {
   const [directors, setDirectors] = useState<DirectorModel[]>([]);
+  const [directorForm, setDirectorForm] = useState({
+    action: Actions.NEW,
+    name: '',
+    surnames: '',
+    bio: '',
+    age: 0,
+  });
+
   const [selectedDirectors, setSelectedDirectors] = useState<DirectorModel[]>(
     []
   );
@@ -40,6 +50,34 @@ const Directors: FC = () => {
   const handleSelectetionChange = (data: DataTableSelectionChangeParams) => {
     const value = data.value as DirectorModel[];
     setSelectedDirectors(value);
+  };
+
+  const handleChange: ChangeEventHandler<
+    HTMLInputElement | HTMLTextAreaElement
+  > = e => {
+    setDirectorForm(prevState => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleYearChange = (e: InputNumberChangeParams) => {
+    setDirectorForm(prevState => ({
+      ...prevState,
+      age: e.value ?? 0,
+    }));
+  };
+
+  const handleNewCreate = async () => {
+    await createDirector({
+      name: directorForm.name,
+      bio: directorForm.bio,
+      age: directorForm.age,
+      surnames: directorForm.surnames,
+    });
+
+    fetchDirectors();
+    setVisibleDialog(false);
   };
 
   const cloneDirector = async (director: DirectorModel) => {
@@ -86,7 +124,12 @@ const Directors: FC = () => {
         className="p-button-text"
         onClick={() => handleDialogHide()}
       />
-      <Button label="Guardar" icon="pi pi-check" className="p-button-text" />
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={handleNewCreate}
+      />
     </React.Fragment>
   );
 
@@ -130,6 +173,7 @@ const Directors: FC = () => {
         <Column field="age" header="Edad"></Column>
         <Column body={actionBodyTemplate} header="Acciones"></Column>
       </DataTable>
+
       <Dialog
         style={{ width: 1000 }}
         visible={visibleDialog}
@@ -139,13 +183,38 @@ const Directors: FC = () => {
         <div className="flex justify-content-between">
           <CustomFormField>
             <label htmlFor="name">Nombre</label>
-            <InputText name="name" />
+            <InputText
+              name="name"
+              value={directorForm.name}
+              onChange={handleChange}
+            />
           </CustomFormField>
           <CustomFormField>
-            <label htmlFor="year">Año</label>
-            <InputNumber name="year" max={2999} />
+            <label htmlFor="name">Apellidos</label>
+            <InputText
+              name="surnames"
+              value={directorForm.surnames}
+              onChange={handleChange}
+            />
           </CustomFormField>
         </div>
+        <CustomFormField>
+          <label htmlFor="name">Bio</label>
+          <InputTextarea
+            name="bio"
+            value={directorForm.bio}
+            onChange={handleChange}
+          />
+        </CustomFormField>
+        <CustomFormField>
+          <label htmlFor="age">Edad</label>
+          <InputNumber
+            name="age"
+            value={directorForm.age}
+            onChange={handleYearChange}
+            max={2999}
+          />
+        </CustomFormField>
       </Dialog>
     </div>
   );
