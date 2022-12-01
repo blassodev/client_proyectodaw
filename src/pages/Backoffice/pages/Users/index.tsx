@@ -1,5 +1,5 @@
-import React, { FC, useEffect, useState } from 'react';
-import { getUsers } from '../../../../requests/users';
+import React, { ChangeEventHandler, FC, useEffect, useState } from 'react';
+import { createUser, getUsers } from '../../../../requests/users';
 import { Toolbar } from 'primereact/toolbar';
 import {
   DataTable,
@@ -11,17 +11,26 @@ import { UserModel } from '../../../../models/UserModel';
 import { Dialog } from 'primereact/dialog';
 import { CustomFormField } from '../Movies/style';
 import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
 import { Checkbox } from 'primereact/checkbox';
 
 const Users: FC = () => {
   const [users, setUsers] = useState<UserModel[]>([]);
+  const [userForm, setUserForm] = useState({
+    name: '',
+    username: '',
+    surnames: '',
+    password: '',
+  });
   const [selectedUsers, setSelectedUsers] = useState<UserModel[]>([]);
   const [visibleDialog, setVisibleDialog] = useState(false);
 
   useEffect(() => {
-    getUsers().then(setUsers);
+    fetchUsers();
   }, []);
+
+  const fetchUsers = () => {
+    getUsers().then(setUsers);
+  };
 
   const handleSelectetionChange = (data: DataTableSelectionChangeParams) => {
     const value = data.value as UserModel[];
@@ -32,14 +41,28 @@ const Users: FC = () => {
     setVisibleDialog(false);
   };
 
+  const handleUserFormChange: ChangeEventHandler<HTMLInputElement> = e => {
+    setUserForm({
+      ...userForm,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleCreateUser = () => {
+    createUser({
+      username: userForm.username,
+      password: userForm.password,
+      name: userForm.name,
+      surnames: userForm.surnames,
+    }).then(() => {
+      fetchUsers();
+      handleDialogHide();
+    });
+  };
+
   const actionBodyTemplate = (rowData: UserModel) => {
     return (
       <React.Fragment>
-        <Button icon="pi pi-clone" className="p-button-rounded mr-2" />
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-        />
         <Button
           icon="pi pi-trash"
           className="p-button-rounded p-button-warning"
@@ -78,7 +101,12 @@ const Users: FC = () => {
         className="p-button-text"
         onClick={() => handleDialogHide()}
       />
-      <Button label="Guardar" icon="pi pi-check" className="p-button-text" />
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={handleCreateUser}
+      />
     </React.Fragment>
   );
 
@@ -104,7 +132,7 @@ const Users: FC = () => {
         <Column body={actionBodyTemplate} header="Acciones"></Column>
       </DataTable>
       <Dialog
-        style={{ width: 1000 }}
+        style={{ width: 500 }}
         visible={visibleDialog}
         onHide={handleDialogHide}
         footer={editDialogFooter}
@@ -112,11 +140,38 @@ const Users: FC = () => {
         <div className="flex justify-content-between">
           <CustomFormField>
             <label htmlFor="name">Nombre</label>
-            <InputText name="name" />
+            <InputText
+              name="name"
+              value={userForm.name}
+              onChange={handleUserFormChange}
+            />
           </CustomFormField>
           <CustomFormField>
-            <label htmlFor="year">Año</label>
-            <InputNumber name="year" max={2999} />
+            <label htmlFor="username">Nombre de usuario</label>
+            <InputText
+              name="username"
+              value={userForm.username}
+              onChange={handleUserFormChange}
+            />
+          </CustomFormField>
+        </div>
+        <div className="flex justify-content-between">
+          <CustomFormField>
+            <label htmlFor="surnames">Apellidos</label>
+            <InputText
+              name="surnames"
+              value={userForm.surnames}
+              onChange={handleUserFormChange}
+            />
+          </CustomFormField>
+          <CustomFormField>
+            <label htmlFor="password">Contraseña</label>
+            <InputText
+              type="password"
+              name="password"
+              value={userForm.password}
+              onChange={handleUserFormChange}
+            />
           </CustomFormField>
         </div>
       </Dialog>
